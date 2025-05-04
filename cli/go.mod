@@ -1,11 +1,12 @@
 module github.com/jmgilman/pbl/cli
 
-go 1.23.0
+go 1.24.2
 
 require (
 	github.com/alecthomas/kong v1.10.0
 	github.com/charmbracelet/huh v0.3.0
 	github.com/charmbracelet/log v0.4.1
+	github.com/jmgilman/pbl/schema v0.0.0
 	github.com/posener/complete v1.2.3
 	github.com/spf13/afero v1.14.0
 	github.com/stretchr/testify v1.10.0
@@ -13,6 +14,7 @@ require (
 )
 
 require (
+	github.com/apple/pkl-go v0.10.0 // indirect
 	github.com/atotto/clipboard v0.1.4 // indirect
 	github.com/aymanbagabas/go-osc52/v2 v2.0.1 // indirect
 	github.com/catppuccin/go v0.2.0 // indirect
@@ -37,6 +39,8 @@ require (
 	github.com/rivo/uniseg v0.4.7 // indirect
 	github.com/riywo/loginshell v0.0.0-20200815045211-7d26008be1ab // indirect
 	github.com/stretchr/objx v0.5.2 // indirect
+	github.com/vmihailenco/msgpack/v5 v5.4.1 // indirect
+	github.com/vmihailenco/tagparser/v2 v2.0.0 // indirect
 	golang.org/x/exp v0.0.0-20231006140011-7918f672742d // indirect
 	golang.org/x/sync v0.12.0 // indirect
 	golang.org/x/sys v0.30.0 // indirect
@@ -44,3 +48,5 @@ require (
 	golang.org/x/text v0.23.0 // indirect
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 )
+
+replace github.com/jmgilman/pbl/schema => ../schema

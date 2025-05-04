@@ -1,0 +1,5 @@
+amends "../schema/schema.pkl"
+
+project {
+    name = "foobar"
+}

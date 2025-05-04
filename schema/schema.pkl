@@ -1,0 +1,11 @@
+@go.Package { name = "github.com/jmgilman/pbl/schema" }
+module jmgilman.pbl.schema
+
+import "package://pkg.pkl-lang.org/pkl-go/pkl.golang@0.10.0#/go.pkl"
+
+// Project holds the settings of the current project
+class Project {
+    name: String
+}
+
+project: Project

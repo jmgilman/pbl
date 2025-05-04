@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"log/slog"
 	"os"
@@ -13,6 +14,7 @@ import (
 	"github.com/charmbracelet/log"
 	"github.com/jmgilman/pbl/cli/internal/run"
 	"github.com/jmgilman/pbl/cli/pkg/pkl"
+	"github.com/jmgilman/pbl/schema"
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 )
@@ -22,7 +24,8 @@ var version = "dev"
 
 // GlobalArgs holds the global command-line arguments.
 type GlobalArgs struct {
-	Verbose int `short:"v" type:"counter" help:"Enable verbose logging."`
+	Test    TestCmd `cmd:"" help:"Test command."`
+	Verbose int     `short:"v" type:"counter" help:"Enable verbose logging."`
 }
 
 // cli is the main command-line interface structure.
@@ -32,6 +35,19 @@ var cli struct {
 	Version VersionCmd `cmd:"" help:"Print the version."`
 
 	ShellCompletions kongplete.InstallCompletions `cmd:"" help:"Install shell completions"`
+}
+
+type TestCmd struct{}
+
+func (c *TestCmd) Run(ctx run.RunContext) error {
+	cfg, err := schema.LoadFromPath(context.Background(), "test.pkl")
+	if err != nil {
+		return fmt.Errorf("failed to load schema: %w", err)
+	}
+
+	fmt.Printf("Got name: %s", cfg.Project.Name)
+
+	return nil
 }
 
 // VersionCmd is the command to print the version of the CLI application.
