@@ -4,11 +4,15 @@ import (
 	"fmt"
 	"log/slog"
 	"os"
+	"os/exec"
+	"path/filepath"
 	"runtime"
 
 	"github.com/alecthomas/kong"
+	"github.com/charmbracelet/huh"
 	"github.com/charmbracelet/log"
 	"github.com/jmgilman/pbl/cli/internal/run"
+	"github.com/jmgilman/pbl/cli/pkg/pkl"
 	"github.com/posener/complete"
 	"github.com/willabides/kongplete"
 )
@@ -73,11 +77,83 @@ func Run() int {
 	}
 	ctx.Bind(rtx)
 
+	pklPath, err := checkPklBinary(logger)
+	if err != nil {
+		printAndExit(err)
+	}
+	logger.Debug("Using pkl binary", "path", pklPath)
+
 	if err := ctx.Run(); err != nil {
 		printAndExit(err)
 	}
 
 	return 0
+}
+
+// getInstallPath returns the appropriate installation path for the pkl binary based on the OS
+func getInstallPath() (string, error) {
+	home, err := os.UserHomeDir()
+	if err != nil {
+		return "", fmt.Errorf("failed to get user home directory: %w", err)
+	}
+
+	binDir := filepath.Join(home, ".local", "bin")
+	if err := os.MkdirAll(binDir, 0755); err != nil {
+		return "", fmt.Errorf("failed to create .local/bin directory: %w", err)
+	}
+
+	binaryName := "pkl"
+	if runtime.GOOS == "windows" {
+		binaryName = "pkl.exe"
+	}
+	return filepath.Join(binDir, binaryName), nil
+}
+
+// checkPklBinary checks if the pkl binary is available in PATH and prompts for installation if not found.
+// Returns the path to the pkl binary and any error that occurred.
+func checkPklBinary(logger *slog.Logger) (string, error) {
+	pklPath, err := exec.LookPath("pkl")
+	if err != nil {
+		logger.Error("pkl binary not found in PATH")
+
+		var shouldInstall bool
+		form := huh.NewForm(
+			huh.NewGroup(
+				huh.NewConfirm().
+					Title("pkl binary not found in PATH").
+					Description("Would you like to install pkl now?").
+					Value(&shouldInstall),
+			),
+		)
+
+		if err := form.Run(); err != nil {
+			return "", fmt.Errorf("failed to show installation prompt: %w", err)
+		}
+
+		if !shouldInstall {
+			return "", fmt.Errorf("pkl binary not found in PATH. Please install pkl first")
+		}
+
+		installPath, err := getInstallPath()
+		if err != nil {
+			return "", fmt.Errorf("failed to determine installation path: %w", err)
+		}
+
+		downloader := pkl.NewPklDownloader(
+			pkl.WithLogger(logger),
+		)
+
+		logger.Info("Downloading pkl...")
+		if err := downloader.Download(installPath); err != nil {
+			return "", fmt.Errorf("failed to download pkl: %w", err)
+		}
+
+		logger.Info("Successfully installed pkl", "path", installPath)
+		return installPath, nil
+	}
+
+	logger.Debug("Found pkl binary", "path", pklPath)
+	return pklPath, nil
 }
 
 func main() {
